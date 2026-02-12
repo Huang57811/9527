@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>后台管理 · 百度网盘视频链接</title>
+    <style>
+        /* ---------- 干净专业的管理面板 ---------- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background: #f1f5f9;
+            padding: 2rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .admin-wrapper {
+            max-width: 1280px;
+            width: 100%;
+            background: white;
+            border-radius: 36px;
+            box-shadow: 0 25px 45px -12px rgba(2, 30, 45, 0.15);
+            padding: 2.2rem 2rem;
+            border: 1px solid rgba(255,255,255,0.5);
+        }
+
+        .admin-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .admin-header h1 {
+            font-size: 2rem;
+            font-weight: 650;
+            background: linear-gradient(150deg, #0a3144, #1f4e6f);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .admin-header h1 span {
+            font-size: 1.9rem;
+        }
+
+        .resource-badge {
+            background: #e2ebf2;
+            padding: 0.5rem 1.2rem;
+            border-radius: 40px;
+            font-size: 0.95rem;
+            color: #1a465b;
+            font-weight: 550;
+        }
+
+        .add-section {
+            background: #f4f8fc;
+            border-radius: 28px;
+            padding: 1.8rem 1.8rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #d7e3ea;
+        }
+
+        .add-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #0f3a4f;
+            margin-bottom: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.2rem;
+            align-items: flex-end;
+        }
+
+        .input-field {
+            flex: 1 1 260px;
+        }
+
+        .input-field label {
+            display: block;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #3b5e70;
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+
+        .input-field input {
+            width: 100%;
+            padding: 0.85rem 1.2rem;
+            border: 1.5px solid #ccdce5;
+            border-radius: 30px;
+            font-size: 0.95rem;
+            background: white;
+            transition: all 0.2s;
+            outline: none;
+        }
+
+        .input-field input:focus {
+            border-color: #2f73a0;
+            box-shadow: 0 0 0 4px rgba(47,115,160,0.08);
+        }
+
+        .btn {
+            border: none;
+            background: #1f4e6f;
+            color: white;
+            padding: 0.85rem 2rem;
+            border-radius: 36px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: background 0.15s, transform 0.1s;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .btn:hover {
+            background: #0e3a52;
+        }
+
+        .btn:active {
+            transform: scale(0.97);
+        }
+
+        .btn-add {
+            background: #1d6f8f;
+            padding: 0.85rem 2.4rem;
+        }
+
+        .resource-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.04);
+        }
+
+        .resource-table thead {
+            background: #1f3a4b;
+            color: white;
+        }
+
+        .resource-table th {
+            padding: 1rem 0.8rem;
+            font-weight: 550;
+            font-size: 0.9rem;
+            text-align: left;
+            padding-left: 1.5rem;
+        }
+
+        .resource-table td {
+            padding: 1rem 0.8rem;
+            background: white;
+            border-bottom: 1px solid #eaf0f3;
+            vertical-align: middle;
+            padding-left: 1.5rem;
+            color: #1e3a47;
+        }
+
+        .resource-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .link-preview {
+            max-width: 280px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: #1f6390;
+            font-size: 0.9rem;
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .edit-btn, .delete-btn {
+            border: none;
+            background: none;
+            font-size: 0.85rem;
+            font-weight: 550;
+            padding: 0.4rem 1rem;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.1s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .edit-btn {
+            background: #e5f0f7;
+            color: #1b6381;
+            border: 1px solid #b2d0df;
+        }
+
+        .edit-btn:hover {
+            background: #cde2ec;
+        }
+
+        .delete-btn {
+            background: #ffe9e9;
+            color: #ac3b3b;
+            border: 1px solid #fbc4c4;
+        }
+
+        .delete-btn:hover {
+            background: #ffd6d6;
+        }
+
+        .empty-message {
+            padding: 2.5rem;
+            text-align: center;
+            color: #557a8a;
+            font-style: italic;
+            background: #fafdff;
+        }
+
+        .footnote {
+            margin-top: 2rem;
+            color: #4f6f7e;
+            font-size: 0.8rem;
+            border-top: 1px solid #d0e0e8;
+            padding-top: 1.2rem;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-wrapper">
+        <div class="admin-header">
+            <h1>
+                <span>🎬</span> 视频资源后台
+            </h1>
+            <div class="resource-badge" id="resourceCountBadge">加载中…</div>
+        </div>
+
+        <!-- 添加视频资源区块 -->
+        <div class="add-section">
+            <div class="add-title">
+                <span>➕</span> 添加新视频 · 百度网盘链接
+            </div>
+            <div class="form-grid">
+                <div class="input-field">
+                    <label>📌 视频名称</label>
+                    <input type="text" id="videoTitle" placeholder="例如：流浪地球 4K" autocomplete="off">
+                </div>
+                <div class="input-field">
+                    <label>🔗 百度网盘分享链接</label>
+                    <input type="url" id="videoLink" placeholder="https://pan.baidu.com/s/xxx 或 带提取码" autocomplete="off">
+                </div>
+                <button class="btn btn-add" id="addResourceBtn">
+                    <span>✔️</span> 添加资源
+                </button>
+            </div>
+            <p style="font-size:0.8rem; margin-top: 1rem; color: #4d6b79;">⚠️ 链接如无协议头，将自动补充 https://</p>
+        </div>
+
+        <!-- 资源列表表格 -->
+        <div style="overflow-x: auto; border-radius: 20px;">
+            <table class="resource-table">
+                <thead>
+                    <tr>
+                        <th>视频标题</th>
+                        <th>百度网盘链接</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="resourceTableBody">
+                    <!-- 动态渲染 -->
+                </tbody>
+            </table>
+        </div>
+        <div class="footnote">
+            ⚡ 编辑/删除实时生效。所有数据储存在你的浏览器本地，与搜索主页互通。
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            "use strict";
+
+            // ---------- 与主页完全一致的数据存储KEY ----------
+            const STORAGE_KEY = 'baiduPanResources';
+
+            // ---------- 初始化示例数据 (仅首次使用后台时填充，方便演示) ----------
+            const DEFAULT_RESOURCES = [
+                { id: '1739000012345', title: '流浪地球', link: 'https://pan.baidu.com/s/1demo123' },
+                { id: '1739000023456', title: '战狼2', link: 'https://pan.baidu.com/s/1demo456' },
+                { id: '1739000034567', title: '三体', link: 'https://pan.baidu.com/s/1demo789' },
+                { id: '1739000045678', title: '白夜追凶', link: 'https://pan.baidu.com/s/1demo101' },
+                { id: '1739000056789', title: '隐秘的角落', link: 'https://pan.baidu.com/s/1demo202' }
+            ];
+
+            // ---------- 工具：获取资源 ----------
+            function getResources() {
+                const stored = localStorage.getItem(STORAGE_KEY);
+                if (stored) {
+                    try {
+                        return JSON.parse(stored) || [];
+                    } catch (e) {
+                        return [];
+                    }
+                }
+                // 首次加载：初始化默认资源，便于演示搜索功能
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_RESOURCES));
+                return [...DEFAULT_RESOURCES];
+            }
+
+            // ---------- 保存至localStorage ----------
+            function saveResources(resources) {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(resources));
+                // 手动触发storage事件，让其他页面（搜索主页）实时更新统计
+                window.dispatchEvent(new StorageEvent('storage', {
+                    key: STORAGE_KEY,
+                    newValue: JSON.stringify(resources)
+                }));
+            }
+
+            // ---------- 渲染表格 ----------
+            function renderTable() {
+                const resources = getResources();
+                const tbody = document.getElementById('resourceTableBody');
+                const badge = document.getElementById('resourceCountBadge');
+                
+                // 更新总数徽章
+                badge.textContent = `📀 总计 ${resources.length} 个视频资源`;
+
+                if (!tbody) return;
+                tbody.innerHTML = ''; // 清空
+
+                if (resources.length === 0) {
+                    const emptyRow = document.createElement('tr');
+                    emptyRow.innerHTML = `<td colspan="3" class="empty-message">✨ 暂无视频资源，请在上方添加</td>`;
+                    tbody.appendChild(emptyRow);
+                    return;
+                }
+
+                // 按id倒序，新添加的靠上
+                const sorted = [...resources].sort((a, b) => (b.id || 0) - (a.id || 0));
+
+                sorted.forEach(item => {
+                    const row = document.createElement('tr');
+                    
+                    // 标题列
+                    const titleCell = document.createElement('td');
+                    titleCell.textContent = item.title || '未命名';
+                    titleCell.style.fontWeight = '550';
+                    
+                    // 链接列
+                    const linkCell = document.createElement('td');
+                    const linkWrapper = document.createElement('div');
+                    linkWrapper.className = 'link-preview';
+                    linkWrapper.textContent = item.link || '';
+                    linkCell.appendChild(linkWrapper);
+                    
+                    // 操作列
+                    const actionCell = document.createElement('td');
+                    actionCell.className = 'action-btns';
+                    
+                    const editBtn = document.createElement('button');
+                    editBtn.className = 'edit-btn';
+                    editBtn.setAttribute('data-id', item.id);
+                    editBtn.innerHTML = '✏️ 编辑';
+                    
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'delete-btn';
+                    deleteBtn.setAttribute('data-id', item.id);
+                    deleteBtn.innerHTML = '🗑️ 删除';
+                    
+                    actionCell.appendChild(editBtn);
+                    actionCell.appendChild(deleteBtn);
+                    
+                    row.appendChild(titleCell);
+                    row.appendChild(linkCell);
+                    row.appendChild(actionCell);
+                    tbody.appendChild(row);
+                });
+            }
+
+            // ---------- 辅助: 自动补充协议 ----------
+            function normalizeLink(link) {
+                let raw = link.trim();
+                if (raw === '') return '';
+                if (!/^https?:\/\//i.test(raw) && !/^\/\//.test(raw)) {
+                    raw = 'https://' + raw;
+                }
+                return raw;
+            }
+
+            // ---------- 添加新资源 ----------
+            function addResource() {
+                const titleInput = document.getElementById('videoTitle');
+                const linkInput = document.getElementById('videoLink');
+                
+                let title = titleInput.value.trim();
+                let link = linkInput.value.trim();
+
+                if (!title) {
+                    alert('请输入视频名称');
+                    return;
+                }
+                if (!link) {
+                    alert('请输入百度网盘链接');
+                    return;
+                }
+
+                link = normalizeLink(link);
+
+                // 简单验证: 链接必须包含 baidu 或 pan (不是强制，但友好提示)
+                if (!link.includes('baidu') && !link.includes('pan')) {
+                    if (!confirm('链接似乎不是标准的百度网盘地址，确定要添加吗？')) {
+                        return;
+                    }
+                }
+
+                const resources = getResources();
+                const newId = Date.now() + '' + Math.floor(Math.random() * 1000);
+                resources.push({
+                    id: newId,
+                    title: title,
+                    link: link
+                });
+
+                saveResources(resources);
+                renderTable();
+
+                // 清空表单
+                titleInput.value = '';
+                linkInput.value = '';
+                titleInput.focus();
+            }
+
+            // ---------- 删除资源 ----------
+            function deleteResource(id) {
+                if (!id) return;
+                if (!confirm('确定要删除该视频资源吗？搜索主页将立即失效。')) return;
+                
+                let resources = getResources();
+                resources = resources.filter(item => item.id != id);  // 弱等于，兼容字符串数字
+                saveResources(resources);
+                renderTable();
+            }
+
+            // ---------- 编辑资源 (使用prompt快速编辑) ----------
+            function editResource(id) {
+                if (!id) return;
+                const resources = getResources();
+                const item = resources.find(r => r.id == id);
+                if (!item) {
+                    alert('资源不存在');
+                    return;
+                }
+
+                const newTitle = prompt('修改视频标题', item.title);
+                if (newTitle === null) return;  // 取消
+                if (newTitle.trim() === '') {
+                    alert('标题不能为空');
+                    return;
+                }
+
+                let newLink = prompt('修改百度网盘链接', item.link);
+                if (newLink === null) return;
+                if (newLink.trim() === '') {
+                    alert('链接不能为空');
+                    return;
+                }
+                newLink = normalizeLink(newLink);
+
+                // 更新
+                item.title = newTitle.trim();
+                item.link = newLink;
+                saveResources(resources);
+                renderTable();
+            }
+
+            // ---------- 事件绑定 (委托) ----------
+            function bindEvents() {
+                // 添加按钮
+                const addBtn = document.getElementById('addResourceBtn');
+                if (addBtn) {
+                    addBtn.addEventListener('click', addResource);
+                }
+
+                // 回车快捷添加 (在输入框按回车)
+                const titleInput = document.getElementById('videoTitle');
+                const linkInput = document.getElementById('videoLink');
+                if (titleInput) {
+                    titleInput.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            addResource();
+                        }
+                    });
+                }
+                if (linkInput) {
+                    linkInput.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            addResource();
+                        }
+                    });
+                }
+
+                // 表格内编辑&删除 (事件委托)
+                const tbody = document.getElementById('resourceTableBody');
+                if (tbody) {
+                    tbody.addEventListener('click', (e) => {
+                        const target = e.target.closest('button');
+                        if (!target) return;
+
+                        const id = target.getAttribute('data-id');
+                        if (target.classList.contains('edit-btn')) {
+                            editResource(id);
+                        } else if (target.classList.contains('delete-btn')) {
+                            deleteResource(id);
+                        }
+                    });
+                }
+            }
+
+            // ---------- 初始化后台管理 ----------
+            function initAdmin() {
+                // 确保localStorage有数据(默认数据已在getResources处理)
+                getResources();  // 触发初始化（若无）
+                renderTable();
+                bindEvents();
+            }
+
+            window.addEventListener('DOMContentLoaded', initAdmin);
+        })();
+    </script>
+</body>
+</html>
