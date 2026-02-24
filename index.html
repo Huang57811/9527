@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>百度网盘 · 影视搜索（含主演）</title>
+    <style>
+        /* 极简搜索风格，只聚焦搜索和主演展示 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        body {
+            background: #f1f5f9;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 2rem 1rem;
+        }
+
+        .main-container {
+            width: 100%;
+            max-width: 900px;
+            background: white;
+            border-radius: 32px;
+            box-shadow: 0 20px 35px -8px rgba(0,0,0,0.08);
+            padding: 2rem 1.8rem;
+            transition: all 0.2s;
+        }
+
+        .title {
+            font-size: 1.7rem;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            color: #0f172a;
+            margin-bottom: 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .title span {
+            background: #e6f0ff;
+            color: #0277bd;
+            font-size: 0.9rem;
+            font-weight: 500;
+            padding: 0.2rem 0.8rem;
+            border-radius: 30px;
+            margin-left: 0.5rem;
+        }
+
+        .sub {
+            color: #475569;
+            font-size: 0.95rem;
+            margin-bottom: 1.8rem;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 1rem;
+        }
+
+        .search-area {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 2.2rem;
+            flex-wrap: wrap;
+        }
+
+        #searchInput {
+            flex: 1;
+            min-width: 200px;
+            padding: 0.9rem 1.5rem;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 48px;
+            font-size: 1.05rem;
+            background: white;
+            transition: 0.18s;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.01);
+        }
+
+        #searchInput:focus {
+            border-color: #3b82f6;
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(59,130,246,0.1);
+        }
+
+        #searchBtn {
+            background: #0f172a;
+            color: white;
+            border: none;
+            border-radius: 48px;
+            padding: 0 2rem;
+            font-size: 1.05rem;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+            cursor: pointer;
+            transition: 0.15s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 8px 14px rgba(15,23,42,0.1);
+        }
+
+        #searchBtn:hover {
+            background: #1e293b;
+            transform: scale(0.98);
+        }
+
+        #searchBtn:active {
+            background: #0f172a;
+            transform: scale(0.96);
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 1rem;
+            color: #334155;
+            font-size: 0.95rem;
+        }
+
+        .result-count {
+            background: #f1f5f9;
+            padding: 0.3rem 1rem;
+            border-radius: 24px;
+            font-size: 0.9rem;
+        }
+
+        .results-container {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin-top: 0.5rem;
+            min-height: 180px;
+        }
+
+        /* 卡片设计：主演信息清晰可见 */
+        .resource-card {
+            background: white;
+            border: 1px solid #f0f4f9;
+            border-radius: 24px;
+            padding: 1.2rem 1.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            transition: 0.15s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        }
+
+        .resource-card:hover {
+            background: #fafcff;
+            border-color: #d9e2ef;
+            box-shadow: 0 10px 20px -12px rgba(0,69,128,0.08);
+        }
+
+        .info-section {
+            flex: 2 1 200px;
+        }
+
+        .resource-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #0a1e2e;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .resource-tag {
+            background: #eef2ff;
+            color: #2563eb;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.25rem 0.8rem;
+            border-radius: 30px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            border: 1px solid #cbd5e1;
+        }
+
+        .baidu-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: #f0f9ff;
+            border-radius: 16px;
+            padding: 0.2rem 0.9rem;
+            font-size: 0.75rem;
+            color: #0369a1;
+            border: 0.5px solid #b7e0ff;
+        }
+
+        /* 主演样式 —— 新添加 */
+        .actor-info {
+            font-size: 0.92rem;
+            color: #3b4a5c;
+            margin-top: 6px;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .actor-label {
+            background: #f1f5f9;
+            padding: 0.2rem 0.8rem;
+            border-radius: 24px;
+            color: #334155;
+            font-weight: 500;
+            font-size: 0.8rem;
+        }
+        .actor-names {
+            color: #0f172a;
+            font-weight: 470;
+        }
+
+        .confirm-btn {
+            background: transparent;
+            border: 1.5px solid #2563eb;
+            color: #2563eb;
+            padding: 0.6rem 1.4rem;
+            border-radius: 40px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.12s;
+            cursor: pointer;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            margin-left: 10px;
+            flex-shrink: 0;
+        }
+
+        .confirm-btn:hover {
+            background: #2563eb;
+            color: white;
+            border-color: #2563eb;
+        }
+
+        .confirm-btn:active {
+            transform: scale(0.96);
+        }
+
+        .placeholder-message {
+            text-align: center;
+            padding: 3.2rem 1.5rem;
+            background: #f8fafc;
+            border-radius: 32px;
+            color: #62748b;
+            font-size: 1.05rem;
+            border: 1px dashed #cbd5e1;
+        }
+
+        .footer-note {
+            margin-top: 2.2rem;
+            font-size: 0.8rem;
+            color: #94a3b8;
+            text-align: center;
+            border-top: 1px solid #eef2f6;
+            padding-top: 1.5rem;
+        }
+
+        .footer-note code {
+            background: #eef2f6;
+            padding: 2px 6px;
+            border-radius: 8px;
+        }
+
+        @media (max-width: 550px) {
+            .main-container { padding: 1.5rem 1rem; }
+            .resource-card { flex-direction: column; align-items: flex-start; gap: 16px; }
+            .confirm-btn { margin-left: 0; width: 100%; justify-content: center; }
+            .search-area { flex-direction: column; }
+            #searchBtn { padding: 0.9rem; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="title">
+            🎬 网盘影视库
+            <span>主演可搜·确认跳转</span>
+        </div>
+        <div class="sub">
+            输入片名或主演，搜索百度网盘视频资源 · 二次确认后跳转
+        </div>
+
+        <!-- 搜索区 -->
+        <div class="search-area">
+            <input type="text" id="searchInput" placeholder="输入片名、主演姓名 …" autofocus>
+            <button id="searchBtn">
+                <span style="font-size:1.1rem;">🔎</span> 搜索资源
+            </button>
+        </div>
+
+        <!-- 结果统计 -->
+        <div class="result-header">
+            <span id="resultStats"></span>
+            <span class="result-count" id="resultCountTag">0 个资源</span>
+        </div>
+
+        <!-- 动态渲染搜索结果 -->
+        <div id="results" class="results-container">
+            <!-- 初始占位提示，无搜索结果 -->
+            <div class="placeholder-message">
+                🎞️ 输入关键词，点击搜索即可显示影视资源<br>
+                <span style="font-size:0.9rem; opacity:0.7;">每个资源均标注主演，确认后前往百度网盘</span>
+            </div>
+        </div>
+
+        <div class="footer-note">
+            ⚡ 资源内置「主演」字段 · 可在 <code>resources</code> 数组自由增删影视及演员
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            "use strict";
+
+            // ---------- ★ 百度网盘影视资源库（含主演）★ ----------
+            // 每个对象包含：片名、百度网盘链接、类型、主演（字符串，多人用逗号分隔）
+            const resources = [
+                { name: "流浪地球2 4K版", url: "https://pan.baidu.com/s/1s4zYYZcKszdwyuUvoI5pJw?pwd=1234", type: "科幻电影", actors: "吴京, 刘德华, 李雪健" },
+                { name: "92家有喜事 4K版", url: "https://pan.baidu.com/s/1BBbcHzN77ObTZS4Q5Uh_1w?pwd=1234", type: "喜剧电视", actors: "周星驰, 黄百鸣, 张国荣" },
+                { name: "97家有喜事 4K版", url: "https://pan.baidu.com/s/1cdIxFTLsn6x0fnz4WsYv3g?pwd=1234", type: "喜剧电视", actors: "周星驰, 黄百鸣, 张国荣" },
+                { name: "七界传说", url: "https://pan.baidu.com/s/1ezAlDWhywcVW1be_yO2bIQ?pwd=Fp63", type: "动画", actors: "无" },
+                { name: "九品芝麻官", url: "https://pan.baidu.com/s/1e3dkI6zSn8UPWv3ycNf1uw?pwd=1234", type: "喜剧电影", actors: "周星驰, 吴孟达" },
+                { name: "九龙城寨", url: "https://pan.baidu.com/s/1kAwRRlZ6RgOYVarsBPnoxw?pwd=1234", type: "电影", actors: "古天乐" },
+                { name: "五亿探长雷洛传2", url: "https://pan.baidu.com/s/1DY33juuZ_fdR2NnpeFcINw?pwd=1234", type: "电影", actors: "刘德华" },
+                { name: "仙逆", url: "https://pan.baidu.com/s/17mjKktZuPXBcasvSlq8Sxg?pwd=1234", type: "动画", actors: "无" },
+                { name: "光能使者", url: "https://pan.baidu.com/s/1HHS4wPjT1GoVM9I0LQNXYg?pwd=cauu", type: "动画", actors: "无" },
+                { name: "功夫", url: "https://pan.baidu.com/s/1mp8EiCKqM090fgVmpY9ovA?pwd=1234", type: "电影", actors: "周星驰" },
+                { name: "千王之王", url: "https://pan.baidu.com/s/1JmuoFucnJj9KBvRKbwjj7A?pwd=1234", type: "电影", actors: "周星驰" },
+                { name: "危机航线", url: "https://pan.baidu.com/s/15AgOF7dqqO924DjTr7YBhA?pwd=1234", type: "电影", actors: "刘德华" },
+                { name: "哪吒之魔童闹海", url: "https://pan.baidu.com/s/1gRikWREh-A_ZGw6GNfr9ZQ?pwd=1234", type: "电影", actors: "无" },
+                { name: "唐伯虎点秋香", url: "https://pan.baidu.com/s/13pXMEsSxlwv5vJnbeqUy3g?pwd=1234", type: "电影", actors: "周星驰" },
+                { name: "大内密探", url: "https://pan.baidu.com/s/1ITU1Bof3GE1xYYbD8kZ4nA?pwd=1234", type: "电影", actors: "周星驰" },
+                { name: "大话西游之大圣娶亲", url: "https://pan.baidu.com/s/1GDPtACSE31zAvSB3sWwadQ?pwd=1234", type: "电影", actors: "周星驰" },
+                { name: "大话西游之月光宝盒", url: "https://pan.baidu.com/s/18mnLlQJYZ3GaZd1ef1CX0A?pwd=1234", type: "电影", actors: "周星驰" },
+                { name: "夺帅", url: "https://pan.baidu.com/s/1-HhvRh7kA8chdasGQ5Q_eA?pwd=1234", type: "电影", actors: "洪金宝，任达华" },
+                { name: "孤注一掷", url: "https://pan.baidu.com/s/1IePy5ltfDUbtpTgjCRnVyQ?pwd=1234", type: "电影", actors: "张艺兴，王传君" },
+                { name: "完美世界", url: "https://pan.baidu.com/s/1qj2cJ13GRne9AHFA8UsEnQ?pwd=vpd4 提取码: vpd4", type: "动漫", actors: "无" },
+                { name: "巨齿鲨2", url: "https://pan.baidu.com/s/1AkjAHM9swahkCI6VPPeQfA?pwd=1234", type: "电影", actors: "李冰冰" },
+                { name: "开局被困思过崖", url: "https://pan.baidu.com/s/1O0y8V8dJMDt-KQ2GXwNpLA?pwd=1234", type: "动画", actors: "无" },
+                { name: "战狼", url: "https://pan.baidu.com/s/1pvSdzxhORJjuf5ntULMsuQ?pwd=1234", type: "电影", actors: "吴京" },
+                { name: "战狼2", url: "https://pan.baidu.com/s/1agy1DlxCyCUFx2EKkvmTJg?pwd=1234", type: "电影", actors: "吴京，张翰" },
+                { name: "抓娃娃", url: "https://pan.baidu.com/s/169VNhkqG2wU0L9xUMkltxQ?pwd=1234", type: "电影", actors: "沈腾" },
+                { name: "拆弹专家2", url: "https://pan.baidu.com/s/16VQrvnnx2QHIenPvz-0q0A?pwd=1234", type: "电影", actors: "刘德华" },
+                { name: "捕风追影2025", url: "https://pan.baidu.com/s/1TrhNY1Qg4hQU2rQ3Aebrzw?pwd=k3sc", type: "电影", actors: "成龙，梁家辉" },
+                { name: "整蛊专家", url: "https://pan.baidu.com/s/1d-cRVDW8pgJ326FRPHI1cw?pwd=1234", type: "电影", actors: "周星驰" },
+                { name: "新精武门", url: "https://pan.baidu.com/s/1RZqvvBMx9uIHcDBieCg0sg?pwd=1234", type: "电影", actors: "周星驰" },
+                { name: "新警察故事", url: "https://pan.baidu.com/s/1SDof_f9pcRK7YHU-fIaCnA?pwd=qur8", type: "电影", actors: "成龙，谢霆锋" },
+                { name: "旋风小子", url: "https://pan.baidu.com/s/1QuLMqgdq-iIusw-MSdKGvA?pwd=1234", type: "电影", actors: "林志颖，释小龙" },
+                { name: "无限成长", url: "https://pan.baidu.com/s/11XAW69JFgtARWak6QNFFYg?pwd=1234", type: "动画", actors: "无" },
+                { name: "未来警察2010", url: "https://pan.baidu.com/s/1Zgih_GZJYYpIJTYLibRWZA?pwd=1234", type: "电影", actors: "刘德华" },
+                { name: "机动战士高达0083", url: "https://pan.baidu.com/s/16O9SYCdH8RX0uG1VcqPAQg?pwd=1234", type: "动漫", actors: "无" },
+                { name: "机动战士高达2002", url: "https://pan.baidu.com/s/1PLz2Up5cBtb8XvIBPHoZ9g?pwd=1234", type: "动漫", actors: "无" },
+                { name: "武动乾坤", url: "https://pan.baidu.com/s/1llnooBkUkhRSn6H__WWMrg?pwd=1234", type: "动漫", actors: "无" },
+                { name: "武状元苏乞儿", url: "https://pan.baidu.com/s/15C9tkU9WdB7ffvP0TjkvOg?pwd=1234", type: "电影", actors: "周星驰" },
+                { name: "水门桥", url: "https://pan.baidu.com/s/1Z3vXGM8wGl8RlnVHgCxVpA?pwd=1234", type: "电影", actors: "吴京" },
+                { name: "流浪地球2", url: "https://pan.baidu.com/s/1s4zYYZcKszdwyuUvoI5pJw?pwd=1234", type: "电影", actors: "吴京" },
+                { name: "济公", url: "https://pan.baidu.com/s/1HjGaF5R2kMShC9ItpHdB0w?pwd=1234", type: "电影", actors: "周星驰" },
+                { name: "焚城", url: "https://pan.baidu.com/s/1NtPvOjHYvSm2ZerO8tBKtQ?pwd=1234", type: "电影", actors: "刘德华" },
+                { name: "熊猫计划", url: "https://pan.baidu.com/s/1aJKCMfH-jlz5VR-NFKhCKg?pwd=tanq", type: "电影", actors: "成龙" },
+                { name: "独行月球", url: "https://pan.baidu.com/s/12rHqg2pb5qtxvGMIBYqE8Q?pwd=1234", type: "电影", actors: "沈腾" },
+                { name: "猎金游戏", url: "https://pan.baidu.com/s/1dwl92eiUJGBefdbynnhmJw?pwd=1234", type: "电影", actors: "刘德华，欧豪" },
+                { name: "男儿本色", url: "https://pan.baidu.com/s/12wK2KbF3GmcXiSXkyesieA?pwd=1234", type: "电影", actors: "谢霆锋，吴京" },
+                { name: "百变星君", url: "https://pan.baidu.com/s/1MZlnStA4dB4fprWMjYXTOg?pwd=1234", type: "电影", actors: "周星驰，吴孟达" },
+                { name: "破坏之王", url: "https://pan.baidu.com/s/1e895Ri3Oa-n7_e5vO27W3w?pwd=1234", type: "电影", actors: "周星驰，吴孟达" },
+                { name: "精装追女仔1~3", url: "https://pan.baidu.com/s/1QMYtQ_HavqWV9EngcjtUMw?pwd=1234", type: "电影", actors: "刘德华" },
+                { name: "红毯先生", url: "https://pan.baidu.com/s/1wHJRQGwC_y5e1WRJ3rRO5w?pwd=1234", type: "电影", actors: "刘德华" },
+                { name: "致命复活", url: "https://pan.baidu.com/s/1nVJsXZh2tMcvHqesT_VJ-Q?pwd=npnv", type: "电视", actors: "郭晋安，万绮雯" },
+                { name: "莫斯科行动", url: "https://pan.baidu.com/s/1rcKepbUt24HmNms_nfNxfA?pwd=1234", type: "电影", actors: "黄轩，文咏珊，张涵予" },
+                { name: "西游降魔篇", url: "https://pan.baidu.com/s/1lYfef0nMWppVoyY8DrfGjw?pwd=1234", type: "电影", actors: "黄渤，文章，舒淇" },
+                { name: "警察故事2", url: "https://pan.baidu.com/s/1qOOsvltDKlIzizX5CrQSJA?pwd=5d82", type: "电影", actors: "成龙" },
+                { name: "警察故事3", url: "https://pan.baidu.com/s/1nD8sbr_yPPz9A6J79J2PBA?pwd=rii9", type: "电影", actors: "成龙" },
+                { name: "误判", url: "https://pan.baidu.com/s/173JKhhQJLD6X-dEGziO8vw?pwd=1234", type: "电影", actors: "甑子丹" },
+                { name: "谈判专家", url: "https://pan.baidu.com/s/1fh7i1VSIfnBvDaYkGprD_g?pwd=1234", type: "电影", actors: "刘青云，吴镇宇" },
+                { name: "财阀家的小儿子", url: "https://pan.baidu.com/s/1mVAry1M-JPTU5rcG8iX8sA?pwd=1234", type: "韩剧", actors: "" },
+                { name: "赌圣2", url: "https://pan.baidu.com/s/1hPz2geaFnIotwx9vfR1M7w?pwd=1234", type: "电影", actors: "葛明辉，吴孟达" },
+                { name: "赌圣3", url: "https://pan.baidu.com/s/1Yh7MNChehnkYEqxVhhXPkA?pwd=1234", type: "电影", actors: "张家辉，王晶" },
+                { name: "超能一家人", url: "https://pan.baidu.com/s/1XiQVZLXzxATG3t9vSNIueA?pwd=1234", type: "电影", actors: "艾伦，沈腾" },
+                { name: "追虎擒龙", url: "https://pan.baidu.com/s/1SPUcVkRGLMs7Xghx_uVfhw?pwd=1234", type: "电影", actors: "梁家辉，吴镇宇，古天乐" },
+                { name: "追龙", url: "https://pan.baidu.com/s/19Gxq_gPVC0E64oeHeLCKZQ?pwd=1234", type: "电影", actors: "刘德华，甄子丹" },
+                { name: "逃学威龙1", url: "https://pan.baidu.com/s/1rNB5xTBdB52AJmoPQBS-Kg?pwd=1234", type: "电影", actors: "周星驰，吴孟达，张敏" },
+                { name: "逃学威龙2", url: "https://pan.baidu.com/s/1HZ7rlJV7g6MZXybWufMtpg?pwd=1234", type: "电影", actors: "周星驰，吴孟达，张敏" },
+                { name: "逃学威龙3", url: "https://pan.baidu.com/s/1eRIfUzKOMdj7b2EjKPdHQQ?pwd=1234", type: "电影", actors: "周星驰，陈百祥，张敏" },
+                { name: "逆鳞", url: "https://pan.baidu.com/s/1VUsYEOYBGUAC5mlrDaNQKQ?pwd=1234", type: "电影", actors: "沈腾" },
+                { name: "遮天", url: "https://pan.baidu.com/s/1xoWSWng4FZTAbwAKGAm-bg?pwd=gv1e", type: "动画", actors: "无" },
+                { name: "金手指", url: "https://pan.baidu.com/s/1DSVN_QZhpi_IdoT_ttFavQ?pwd=1234", type: "电影", actors: "梁朝伟，任达华，刘德华" },
+                { name: "金钱帝国", url: "https://pan.baidu.com/s/1LEaQsP_MmOlR5p88-7Xh-w?pwd=1234", type: "电影", actors: "梁家辉，陈奕迅，王晶" },
+                { name: "长安的荔枝", url: "https://pan.baidu.com/s/14KdwNd1D0dZYji593utSGg?pwd=1234", type: "电影", actors: "大鹏" },
+                { name: "飞驰人生2", url: "https://pan.baidu.com/s/1E6V3aAztUEYg8yyGXlET7w?pwd=1234", type: "电影", actors: "沈腾" },
+                { name: "食神", url: "https://pan.baidu.com/s/1-GKdH14Y63GYeEj5Q07uUw?pwd=1234", type: "电影", actors: "周星驰" },
+                { name: "鱿鱼游戏", url: "https://pan.baidu.com/s/1MRWPHAn4LKg9aLPs2GwUPw?pwd=1234", type: "电影", actors: "李政宰" },
+                { name: "鹿鼎记2神龙教", url: "https://pan.baidu.com/s/1jo0pS-wjdbFIuOlwMJzkWA?pwd=1234", type: "电影", actors: "周星驰" },
+                { name: "龙马精神", url: "https://pan.baidu.com/s/1BIdYmAjizQSgrWXE8vyUDg?pwd=ev9g", type: "电影", actors: "成龙" },
+                { name: "非常检控观", url: " https://pan.baidu.com/s/1TmHvATkccHspgBmfOs1d-g?pwd=1234", type: "电视剧", actors: "马德钟" },
+                { name: "琅琊榜之风起长林", url: "https://pan.baidu.com/s/16u5s7w_G3TKw40HgDhhT8Q?pwd=1234", type: "电视剧", actors: "刘昊然，黄晓明" },
+                { name: "流浪地球", url: "https://pan.baidu.com/s/1_x0jz0MuV7uBPEKd5Hlj2w?pwd=1234", type: "电影", actors: "吴京" },
+                { name: "琅琊榜", url: "https://pan.baidu.com/s/1aFlmDITkxKcL4aVLCF8-OA?pwd=1234", type: "电视剧", actors: "胡歌" },
+                { name: "伪装者", url: "https://pan.baidu.com/s/12a_lQhrT0uVhA6FhpqaP1g?pwd=1234", type: "电视剧", actors: "胡歌" },
+                { name: "误杀", url: "https://pan.baidu.com/s/1qXtcd4HBhZAEW1yz5uu3jA?pwd=1234 ", type: "电影", actors: "肖央" },
+                { name: "误杀2", url: " https://pan.baidu.com/s/1Wn_ihzE-2Em1HboudEd0Rg?pwd=1234", type: "电影", actors: "肖央" },
+                { name: "误杀3", url: "https://pan.baidu.com/s/1nXBaYwY6Zfe6lORGYO_7Hw?pwd=1234", type: "电影", actors: "肖央" },
+                { name: "守护者们2025", url: "https://pan.baidu.com/s/1s6HZc0Iww3UcOBX9LDN18A?pwd=1234", type: "电视剧", actors: "韩东君，张一山" },
+                { name: "寻秦记", url: "https://pan.baidu.com/s/1ymcaUSL1iSQ6NBrW0zcH8g?pwd=1234", type: "电视剧", actors: "古天乐，林峰" },
+                { name: "澳门风云3", url: " https://pan.baidu.com/s/1lcczYSISrFSjdWma4eFpYg?pwd=1234", type: "电影", actors: "周润发" },
+                { name: "澳门风云2", url: "https://pan.baidu.com/s/1LZtl3PMAvfIcUVpvCWkJDw?pwd=1234", type: "电影", actors: "周润发" },
+                { name: "鹿鼎记", url: "https://pan.baidu.com/s/13EwJVxAXY65A0owXO2y-9A?pwd=1234 ", type: "电视剧", actors: "陈小春" },
+                { name: "美国队长4", url: "https://pan.baidu.com/s/1vaMYj9LUwrFMjRWWsGGGGg?pwd=1234", type: "电影", actors: "安东尼·麦凯" },
+                { name: "美国队长3", url: "https://pan.baidu.com/s/1SJaN2hM2a7JH3mTuuvnAMA?pwd=1234", type: "电影", actors: "小罗伯特·唐尼" },
+                { name: "美国队长2", url: "https://pan.baidu.com/s/1Fulz0e2z2I32Dog_SfWX_A?pwd=1234", type: "电影", actors: "克里斯·埃文斯" },
+                { name: "美国队长1", url: "https://pan.baidu.com/s/1GtdIdR5QmBqYTe9JLyQwjg?pwd=1234", type: "电影", actors: "克里斯·埃文斯" },
+                { name: "寒战2", url: "https://pan.baidu.com/s/12XTAyKhkCADFw391z2xa6g?pwd=1234", type: "电影", actors: "梁家辉，郭富城" },
+                { name: "寒战", url: "https://pan.baidu.com/s/1cw02WtBB0l-mUwZm2z5ieg?pwd=1234 ", type: "电影", actors: "梁家辉，郭富城" },
+                { name: "国色风华", url: "https://pan.baidu.com/s/182whZKRb48-FkK8XD5coCQ?pwd=1234", type: "电影", actors: "杨紫，李现" },
+                { name: "我是刑警", url: "https://pan.baidu.com/s/105kCfepzy68WZCm0k2XSbw?pwd=1234", type: "电影", actors: "于和伟，富大龙" },
+                { name: "猎罪图鉴2", url: "https://pan.baidu.com/s/1zGWgqoOZt-syleYwPDZXyQ?pwd=1234", type: "电影", actors: "秦海璐" },
+                { name: "猎罪图鉴", url: "https://pan.baidu.com/s/1QG6DZOm_5txw1Rlh32eE8Q?pwd=1234", type: "电影", actors: "秦海璐" },
+                { name: "漂白", url: " https://pan.baidu.com/s/1h1tQn2VQWFb57GVp5GPMjg?pwd=1234 ", type: "电视剧", actors: "郭京飞" },
+                { name: "临江仙", url: "https://pan.baidu.com/s/1urkYQ6Io4rhIcyQzu2HN1w?pwd=1234", type: "电视剧", actors: "白露" },
+                { name: "无忧渡", url: "https://pan.baidu.com/s/1Pk-BGV-zrWmcbksR4PXG5Q?pwd=1234", type: "电视剧", actors: "任嘉伦" },
+                { name: "赴山海", url: " https://pan.baidu.com/s/1pn5EJx4QKZjf_8zFrLZ7Ww?pwd=1234", type: "电视剧", actors: "成毅" },
+                { name: "五福临门", url: "https://pan.baidu.com/s/1TJQ46eoCe7Sag1XrY6qxCg?pwd=1234", type: "电视剧", actors: "卢昱晓" },
+                { name: "六姊妹", url: "https://pan.baidu.com/s/1urkYQ6Io4rhIcyQzu2HN1w?pwd=1234", type: "电视剧", actors: "梅婷" },
+                { name: "以法之名", url: "https://pan.baidu.com/s/104IJz3RhY6qR99LUKIoOOw?pwd=1234", type: "电视剧", actors: "张译" },
+                { name: "朝雪录", url: "https://pan.baidu.com/s/18ET-UKE3lIXYSdcAnzcvVg?pwd=1234", type: "电视剧", actors: "李兰迪" },
+                { name: "唐朝诡事录4", url: "https://pan.baidu.com/s/1H9GGckIPIhtJHcGeiMEIuw?pwd=1234", type: "电视剧", actors: "杨旭文" },
+                { name: "唐朝诡事录3", url: "https://pan.baidu.com/s/1Moq6-TYwqlZSqr_ALUeyTw?pwd=1234", type: "电视剧", actors: "杨旭文" },
+                { name: "唐朝诡事录2", url: "https://pan.baidu.com/s/1XBAUJGAFk24GrhpdWggnRA?pwd=1234", type: "电视剧", actors: "杨旭文" },
+                { name: "唐朝诡事录1", url: "https://pan.baidu.com/s/1i3YcFfYkvctA5iNhMevEYQ?pwd=1234", type: "电视剧", actors: "杨旭文" },
+                { name: "雪中悍刀行", url: "https://pan.baidu.com/s/15kqRtPZwvyxTP5wqi9Ihpw?pwd=1234", type: "电视剧", actors: "张若昀" },
+                { name: "万物生", url: " https://pan.baidu.com/s/1fEJN36kO9joTbEYrHHvI_A?pwd=1234", type: "电视剧", actors: "杨幂" },
+                { name: "许我耀眼", url: "https://pan.baidu.com/s/1Y02nhX_OzQ8trBfJDiVRvA?pwd=1234", type: "电视剧", actors: "陈伟霆，赵露思" },
+                { name: "大奉打更人", url: " https://pan.baidu.com/s/1wpgcYWqzMKhDFN9i3N-Rmw?pwd=1234", type: "电视剧", actors: "王鹤棣" },
+                { name: "藏海转", url: "https://pan.baidu.com/s/1Cx93cjHbNSB2npvDClj4Yg?pwd=1234", type: "电视剧", actors: "肖战" },
+                { name: "消防设施操作员（初、中级）电子资料大礼包】", url: "https://pan.baidu.com/s/1dDyUnaHmxYUxHAo3HJoAUA?pwd=1234 ", type: "资料", actors: "无" },
+                { name: "寻秦记2025", url: "https://pan.baidu.com/s/17sCcHPftHCi9n-izsV9wcA?pwd=1234 ", type: "电影", actors: "古天乐，林峰" }
+                 ];
+
+            // DOM 元素
+            const searchInput = document.getElementById('searchInput');
+            const searchBtn = document.getElementById('searchBtn');
+            const resultsContainer = document.getElementById('results');
+            const resultStats = document.getElementById('resultStats');
+            const resultCountTag = document.getElementById('resultCountTag');
+
+            // 转义（防止XSS，增强稳健）
+            function escapeHTML(str) {
+                if (!str) return '';
+                return String(str).replace(/[&<>"]/g, function(c) {
+                    if (c === '&') return '&amp;';
+                    if (c === '<') return '&lt;';
+                    if (c === '>') return '&gt;';
+                    if (c === '"') return '&quot;';
+                    return c;
+                });
+            }
+
+            // ---------- 渲染搜索结果卡片（带主演信息）----------
+            function renderResults(resourceArray) {
+                resultsContainer.innerHTML = '';
+
+                const count = resourceArray.length;
+                resultCountTag.innerText = `${count} 个资源`;
+                resultStats.innerHTML = count ? `📋 找到 ${count} 个影视资源` : '📭 没有匹配的资源';
+
+                if (count === 0) {
+                    const emptyDiv = document.createElement('div');
+                    emptyDiv.className = 'placeholder-message';
+                    emptyDiv.innerHTML = '😕 没有找到相关影视或主演<br><span style="font-size:0.9rem;">试试其他关键词～</span>';
+                    resultsContainer.appendChild(emptyDiv);
+                    return;
+                }
+
+                // 循环构建卡片
+                resourceArray.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'resource-card';
+
+                    // 左侧信息区
+                    const infoDiv = document.createElement('div');
+                    infoDiv.className = 'info-section';
+
+                    // 片名 + 类型标签 + 网盘徽章
+                    const nameLine = document.createElement('div');
+                    nameLine.className = 'resource-name';
+                    nameLine.innerHTML = `
+                        ${escapeHTML(item.name)}
+                        <span class="resource-tag">${escapeHTML(item.type)}</span>
+                        <span class="baidu-badge">📁 百度网盘</span>
+                    `;
+
+                    // ★ 主演信息展示（新增）
+                    const actorDiv = document.createElement('div');
+                    actorDiv.className = 'actor-info';
+                    actorDiv.innerHTML = `
+                        <span class="actor-label">🎭 主演</span>
+                        <span class="actor-names">${escapeHTML(item.actors || '信息待补充')}</span>
+                    `;
+
+                    // 链接简略展示（美观）
+                    const linkHint = document.createElement('div');
+                    linkHint.style.fontSize = '0.8rem';
+                    linkHint.style.color = '#64748b';
+                    linkHint.style.marginTop = '6px';
+                    let shortUrl = item.url || '';
+                    if (shortUrl.length > 40) shortUrl = shortUrl.substring(0, 38) + '…';
+                    linkHint.innerHTML = `<span style="background:#f1f5f9; padding:2px 10px; border-radius:20px;">🔗 ${escapeHTML(shortUrl)}</span>`;
+
+                    infoDiv.appendChild(nameLine);
+                    infoDiv.appendChild(actorDiv);   // 主演放在醒目位置
+                    infoDiv.appendChild(linkHint);
+
+                    // 确认跳转按钮
+                    const confirmBtn = document.createElement('button');
+                    confirmBtn.className = 'confirm-btn';
+                    confirmBtn.setAttribute('data-url', item.url);
+                    confirmBtn.setAttribute('data-name', item.name);
+                    confirmBtn.innerHTML = `✔️ 确认跳转网盘`;
+
+                    card.appendChild(infoDiv);
+                    card.appendChild(confirmBtn);
+                    resultsContainer.appendChild(card);
+                });
+            }
+
+            // ---------- 搜索功能（支持片名、类型、主演）----------
+            function performSearch() {
+                const keyword = searchInput.value.trim();
+                let filtered = [];
+
+                if (keyword === '') {
+                    // 空关键词展示全部资源，方便浏览
+                    filtered = [...resources];
+                } else {
+                    const lowerKeyword = keyword.toLowerCase();
+                    filtered = resources.filter(item => {
+                        // 同时搜索：片名、类型、主演（全包含）
+                        return item.name.toLowerCase().includes(lowerKeyword) ||
+                               item.type.toLowerCase().includes(lowerKeyword) ||
+                               (item.actors && item.actors.toLowerCase().includes(lowerKeyword));
+                    });
+                }
+
+                renderResults(filtered);
+            }
+
+            // ---------- 事件绑定 ----------
+            searchBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                performSearch();
+            });
+
+            searchInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    performSearch();
+                }
+            });
+
+            // 确认跳转：二次弹窗确认
+            resultsContainer.addEventListener('click', function(e) {
+                const btn = e.target.closest('.confirm-btn');
+                if (!btn) return;
+                const url = btn.dataset.url;
+                const resourceName = btn.dataset.name || '该资源';
+
+                const isConfirm = confirm(`📌 即将跳转百度网盘\n\n《${resourceName}》\n\n确认打开链接吗？`);
+                if (isConfirm) {
+                    window.open(url, '_blank');
+                }
+            });
+
+            // ---------- 初始状态：不显示任何资源，只显示搜索提示 ----------
+            function setInitialPlaceholder() {
+                resultsContainer.innerHTML = '<div class="placeholder-message">🎥 在搜索框输入片名或主演姓名，点击搜索<br><span style="font-size:0.9rem;">每个资源均标注主演，确认跳转前会二次弹窗</span></div>';
+                resultCountTag.innerText = '0 个资源';
+                resultStats.innerHTML = '✨ 等待搜索';
+            }
+            setInitialPlaceholder();
+            searchInput.value = '';  // 清空输入框
+        })();
+    </script>
+</body>
+</html>
